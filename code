@@ -1,0 +1,84 @@
+import random
+import string
+
+MAX_WRONG = 6
+WORD_LIST = ["nebula", "python", "quantum", "algorithm", "orchid"]  # change these to make it yours
+
+def choose_word(word_list):
+    """Pick a random word from the provided list."""
+    return random.choice(word_list).lower().strip()
+
+def display_state(secret, guessed_letters):
+    """
+    Return the display string showing guessed letters and underscores for missing ones.
+    Example: secret='python', guessed_letters={'p','o'} -> 'p _ _ _ o _'
+    """
+    return " ".join([ch if ch in guessed_letters else "_" for ch in secret])
+
+def get_valid_guess(already_guessed):
+    """
+    Read a single-letter guess from the user, validate it, and return it.
+    Reject non-alpha input, repeated letters, or more than one char.
+    """
+    while True:
+        guess = input("Enter a letter: ").strip().lower()
+        if len(guess) != 1:
+            print("Please enter exactly one character.")
+            continue
+        if guess not in string.ascii_lowercase:
+            print("Please enter a letter (a-z).")
+            continue
+        if guess in already_guessed:
+            print(f"You already tried '{guess}'. Try another letter.")
+            continue
+        return guess
+
+def play_round(secret):
+    """
+    Play a single round of hangman with the given secret word.
+    Returns True if player wins, False if they lose.
+    """
+    guessed = set()
+    wrong_guesses = 0
+
+    print("\nLet's play Hangman!")
+    # Loop until player wins or reaches max wrong guesses
+    while True:
+        state = display_state(secret, guessed)
+        print("\nWord: ", state)
+        print(f"Wrong guesses left: {MAX_WRONG - wrong_guesses}")
+        print("Guessed letters:", " ".join(sorted(guessed)) if guessed else "(none)")
+
+        # Check for win
+        if all(ch in guessed for ch in secret):
+            print("\n🎉 Congratulations — you guessed the word:", secret)
+            return True
+
+        # Check for loss
+        if wrong_guesses >= MAX_WRONG:
+            print("\n☠️ Game over — you're out of guesses. The word was:", secret)
+            return False
+
+        guess = get_valid_guess(guessed)
+        guessed.add(guess)
+
+        if guess in secret:
+            print(f"Good guess! '{guess}' is in the word.")
+        else:
+            wrong_guesses += 1
+            print(f"Sorry, '{guess}' is NOT in the word. (-1)")
+
+def main():
+    print("=== Welcome to the Hangman learning game ===")
+    while True:
+        secret_word = choose_word(WORD_LIST)
+        play_round(secret_word)
+
+        # Ask whether to play again
+        again = input("\nPlay again? (y/n): ").strip().lower()
+        if again not in ("y", "yes"):
+            print("Thanks for playing — goodbye!")
+            break
+
+if __name__ == "__main__":
+    main()
